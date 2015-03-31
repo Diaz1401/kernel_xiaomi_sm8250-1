@@ -380,6 +380,10 @@ static inline void *offset_to_ptr(const int *off)
 # define __optimize(level)
 #endif
 
+#ifndef __noreorder
+#define __noreorder
+#endif
+
 #ifndef __compiletime_warning
 # define __compiletime_warning(message)
 #endif
