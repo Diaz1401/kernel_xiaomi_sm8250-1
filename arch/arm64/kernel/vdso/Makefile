@@ -30,7 +30,7 @@ KBUILD_CFLAGS	+= $(DISABLE_LTO)
 endif
 
 ccflags-y := -fno-common -fno-builtin -fno-stack-protector -ffixed-x18
-ccflags-y += -DDISABLE_BRANCH_PROFILING
+ccflags-y += -DDISABLE_BRANCH_PROFILING -DBUILD_VDSO
 ccflags-y += $(call cc-option, -fno-whole-program)
 
 
