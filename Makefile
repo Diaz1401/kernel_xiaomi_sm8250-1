@@ -394,8 +394,8 @@ STRIP		= llvm-strip
 else
 CC		= $(CROSS_COMPILE)gcc
 LD		= $(CROSS_COMPILE)ld
-AR		= $(CROSS_COMPILE)ar
-NM		= $(CROSS_COMPILE)nm
+AR             ?= $(CROSS_COMPILE)ar
+NM             ?= $(CROSS_COMPILE)nm
 OBJCOPY		= $(CROSS_COMPILE)objcopy
 OBJDUMP		= $(CROSS_COMPILE)objdump
 READELF		= $(CROSS_COMPILE)readelf
@@ -642,6 +642,21 @@ ifdef CONFIG_LTO_CLANG
 LLVM_AR		:= llvm-ar
 LLVM_NM		:= llvm-nm
 export LLVM_AR LLVM_NM
+endif
+
+ifdef CONFIG_LTO_GCC
+lto-gcc-flags	:= -flto -flto=jobserver -fno-fat-lto-objects \
+		   -fuse-linker-plugin -fwhole-program
+LTO_LDFLAGS	:= $(lto-gcc-flags) -Wno-lto-type-mismatch -Wno-psabi \
+		   -Wno-stringop-overflow -flinker-output=nolto-rel
+LDFINAL		:= $(CONFIG_SHELL) $(srctree)/scripts/gcc-ld $(LTO_LDFLAGS)
+AR		:= $(CROSS_COMPILE)gcc-ar
+NM		:= $(CROSS_COMPILE)gcc-nm
+DISABLE_LTO_GCC	:= -fno-lto
+export DISABLE_LTO_GCC LDFINAL
+else
+LDFINAL		:= $(LD)
+export LDFINAL
 endif
 
 # The arch Makefile can set ARCH_{CPP,A,C}FLAGS to override the default
@@ -926,10 +941,9 @@ export DISABLE_LTO_CLANG
 endif
 
 ifdef CONFIG_LTO
-LTO_CFLAGS	:= $(lto-clang-flags)
+LTO_CFLAGS	:= $(lto-clang-flags) $(lto-gcc-flags)
 KBUILD_CFLAGS	+= $(LTO_CFLAGS)
-
-DISABLE_LTO	:= $(DISABLE_LTO_CLANG)
+DISABLE_LTO	:= $(DISABLE_LTO_CLANG) $(DISABLE_LTO_GCC)
 export LTO_CFLAGS DISABLE_LTO
 endif
 
