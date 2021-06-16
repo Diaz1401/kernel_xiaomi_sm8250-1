@@ -2190,5 +2190,5 @@ int __init socinfo_init(void)
 	socinfo_init_done = true;
 
 	return 0;
-}
-subsys_initcall(socinfo_init);
+};
+device_initcall(socinfo_init);
