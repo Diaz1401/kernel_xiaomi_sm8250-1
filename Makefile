@@ -650,9 +650,7 @@ export LLVM_AR LLVM_NM
 endif
 
 ifdef CONFIG_LTO_GCC
-lto-gcc-flags	:= -flto=$(NPROC) -fno-fat-lto-objects \
-		   -fuse-linker-plugin -fwhole-program \
-		   -fdevirtualize-at-ltrans
+lto-gcc-flags	:= -flto=$(NPROC) -fdevirtualize-at-ltrans
 LTO_LDFLAGS	:= $(lto-gcc-flags) -Wno-lto-type-mismatch -Wno-psabi \
 		   -Wno-stringop-overflow -flinker-output=nolto-rel
 LDFINAL		:= $(CONFIG_SHELL) $(srctree)/scripts/gcc-ld $(LTO_LDFLAGS)
