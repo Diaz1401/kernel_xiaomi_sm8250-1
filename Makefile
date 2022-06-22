@@ -724,6 +724,7 @@ ifdef CONFIG_CC_WERROR
 KBUILD_CFLAGS  += -Werror
 endif
 
+ifdef CONFIG_CAT_OPTIMIZE
 KBUILD_CFLAGS	+= $(cat_arch_flags)
 KBUILD_AFLAGS	+= $(cat_arch_flags)
 ifeq ($(cc-name),clang)
@@ -733,6 +734,7 @@ KBUILD_LDFLAGS	+= $(cat_llvm_flags)
 else
 KBUILD_CFLAGS	+= $(cat_gcc_flags)
 KBUILD_AFLAGS	+= $(cat_gcc_flags)
+endif
 endif
 
 # Tell gcc to never replace conditional load with a non-conditional one

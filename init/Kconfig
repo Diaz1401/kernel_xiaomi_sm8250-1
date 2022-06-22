@@ -1309,6 +1309,11 @@ config CC_OPTIMIZE_FOR_SIZE
 
 endchoice
 
+config CAT_OPTIMIZE
+	bool "Enable custom optimization flags"
+	default n
+	depends on ARCH_KONA
+
 config HAVE_LD_DEAD_CODE_DATA_ELIMINATION
 	bool
 	help
