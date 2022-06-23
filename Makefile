@@ -694,24 +694,39 @@ KBUILD_CFLAGS	+= $(call cc-disable-warning, format-overflow)
 KBUILD_CFLAGS	+= $(call cc-disable-warning, int-in-bool-context)
 KBUILD_CFLAGS	+= $(call cc-disable-warning, address-of-packed-member)
 
+cat_arch_flags := -mcpu=cortex-a77
+cat_llvm_flags := -mllvm -polly \
+		 -mllvm -polly-position=early \
+		 -mllvm -polly-optimizer=isl \
+		 -mllvm -polly-code-generation=full \
+		 -mllvm -polly-vectorizer=stripmine \
+		 -mllvm -polly-enable-delicm \
+		 -mllvm -polly-enable-simplify \
+		 -mllvm -polly-run-inliner
+
 ifdef CONFIG_CC_OPTIMIZE_FOR_SIZE
-KBUILD_CFLAGS   += -Os
-KBUILD_AFLAGS   += -Os
-KBUILD_LDFLAGS   += -Os
+KBUILD_CFLAGS	+= -Os
+KBUILD_AFLAGS	+= -Os
+KBUILD_LDFLAGS	+= -Os
 else
-KBUILD_CFLAGS   += -O2
-KBUILD_AFLAGS   += -O2
-KBUILD_LDFLAGS   += -O2
+KBUILD_CFLAGS	+= -O2
+KBUILD_AFLAGS	+= -O2
+KBUILD_LDFLAGS	+= -O2
 endif
 
 ifdef CONFIG_CC_WERROR
 KBUILD_CFLAGS  += -Werror
 endif
 
-KBUILD_CFLAGS   += -mcpu=cortex-a77
-KBUILD_AFLAGS   += -mcpu=cortex-a77
+KBUILD_CFLAGS	+= $(cat_arch_flags)
+KBUILD_AFLAGS	+= $(cat_arch_flags)
 ifneq ($(LLVM),)
-KBUILD_LDFLAGS   += -mllvm -mcpu=cortex-a77
+KBUILD_LDFLAGS	+= -mllvm $(cat_arch_flags)
+endif
+ifeq ($(cc-name),clang)
+KBUILD_CFLAGS	+= $(cat_llvm_flags)
+KBUILD_AFLAGS	+= $(cat_llvm_flags)
+KBUILD_LDFLAGS	+= $(cat_llvm_flags)
 endif
 
 # Tell gcc to never replace conditional load with a non-conditional one
