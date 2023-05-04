@@ -942,6 +942,9 @@ KBUILD_LDFLAGS_MODULE += -T scripts/module-lto.lds
 # allow disabling only clang LTO where needed
 DISABLE_LTO_CLANG := -fno-lto
 export DISABLE_LTO_CLANG
+
+# -O3 optimization level for LTO
+KBUILD_LDFLAGS	+= --lto-O3
 endif
 
 ifdef CONFIG_LTO
