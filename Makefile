@@ -624,8 +624,12 @@ endif
 # Defaults to vmlinux, but the arch makefile usually adds further targets
 all: vmlinux
 
-CFLAGS_GCOV	:= --coverage \
-	$(call cc-option,-fno-tree-loop-im) \
+ifeq ($(CONFIG_PGO_GEN),y)
+CFLAGS_GCOV := -fprofile-generate
+else
+CFLAGS_GCOV := --coverage
+endif
+CFLAGS_GCOV += $(call cc-option,-fno-tree-loop-im) \
 	$(call cc-disable-warning,maybe-uninitialized,)
 export CFLAGS_GCOV
 
@@ -702,6 +706,14 @@ endif
 
 ifdef CONFIG_CC_WERROR
 KBUILD_CFLAGS  += -Werror
+endif
+
+# Use generated profiles from profiling with CONFIG_PGO_GEN to optimize the kernel
+ifeq ($(CONFIG_PGO_USE),y)
+KBUILD_CFLAGS	+=	-fprofile-use \
+			-fprofile-correction \
+			-fprofile-partial-training \
+			-Wno-error=coverage-mismatch
 endif
 
 # Tell gcc to never replace conditional load with a non-conditional one
