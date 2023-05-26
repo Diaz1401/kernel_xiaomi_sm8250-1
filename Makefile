@@ -650,7 +650,7 @@ export LLVM_AR LLVM_NM
 endif
 
 ifdef CONFIG_LTO_GCC
-lto-gcc-flags	:= -flto -flto=jobserver -fno-fat-lto-objects \
+lto-gcc-flags	:= -flto=$(NPROC) -fno-fat-lto-objects \
 		   -fuse-linker-plugin -fwhole-program
 LTO_LDFLAGS	:= $(lto-gcc-flags) -Wno-lto-type-mismatch -Wno-psabi \
 		   -Wno-stringop-overflow -flinker-output=nolto-rel
