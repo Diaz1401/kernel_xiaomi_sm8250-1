@@ -698,7 +698,8 @@ cat_arch_flags	:= -mcpu=cortex-a77
 cat_gcc_flags	:= -fipa-pta \
 		 -fgraphite \
 		 -fgraphite-identity \
-		 -floop-nest-optimize
+		 -floop-nest-optimize \
+		 -fno-semantic-interposition
 cat_llvm_flags	:= -mllvm -polly \
 		 -mllvm -polly-position=early \
 		 -mllvm -polly-optimizer=isl \
