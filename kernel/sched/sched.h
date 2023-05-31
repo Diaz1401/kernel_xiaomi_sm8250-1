@@ -3064,7 +3064,6 @@ static inline void update_cgroup_boost_settings(void) { }
 static inline void restore_cgroup_boost_settings(void) { }
 #endif
 
-<<<<<<< HEAD
 extern int alloc_related_thread_groups(void);
 
 extern void check_for_migration(struct rq *rq, struct task_struct *p);
@@ -3299,8 +3298,5 @@ struct sched_avg_stats {
 	int nr_scaled;
 };
 extern void sched_get_nr_running_avg(struct sched_avg_stats *stats);
-=======
-extern u64 avg_vruntime(struct cfs_rq *cfs_rq);
 
-#endif /* _KERNEL_SCHED_SCHED_H */
->>>>>>> af4cf40470c2 (sched/fair: Add cfs_rq::avg_vruntime)
+extern int entity_eligible(struct cfs_rq *cfs_rq, struct sched_entity *se);
