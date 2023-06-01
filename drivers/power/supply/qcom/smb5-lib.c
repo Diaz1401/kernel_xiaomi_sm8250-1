@@ -4619,7 +4619,7 @@ static int smblib_update_thermal_readings(struct smb_charger *chg)
 int smblib_set_vbus_disable(struct smb_charger *chg,
 					bool disable)
 {
-	int ret;
+	int ret = 0;
 
 	smblib_err(chg, "set vbus disable:%d\n", disable);
 	if (disable) {
