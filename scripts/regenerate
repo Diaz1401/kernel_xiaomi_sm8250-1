@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+HEAD=$(git rev-parse HEAD)
+scripts/update_defconfig alioth
+echo "Regenerate defconfig ..."
+mkdir out || exit 0
+make alioth_defconfig O=out || exit 0
+mv out/.config arch/arm64/configs/cat_defconfig || exit 0
+rm -rf out
+echo "Commiting ..."
+git add arch/arm64/configs/cat_defconfig arch/arm64/configs/alioth_defconfig
+git commit -sm "ARM64: configs: regenerate mengkernel/kernel_xiaomi_sm8250@${HEAD}"
