@@ -722,12 +722,12 @@ cat_gcc_flags	:= -fipa-pta \
 		 -fno-semantic-interposition
 cat_llvm_flags	:= -mllvm -polly \
 		 -mllvm -polly-position=early \
-		 -mllvm -polly-optimizer=isl \
-		 -mllvm -polly-code-generation=full \
 		 -mllvm -polly-vectorizer=stripmine \
-		 -mllvm -polly-enable-delicm \
-		 -mllvm -polly-enable-simplify \
-		 -mllvm -polly-run-inliner
+		 -mllvm -polly-run-dce \
+		 -mllvm -polly-target-1st-cache-level-size=131072 \
+		 -mllvm -polly-target-1st-cache-level-default-size=131072 \
+		 -mllvm -polly-target-2nd-cache-level-size=262144 \
+		 -mllvm -polly-target-2nd-cache-level-default-size=262144
 
 ifdef CONFIG_CC_OPTIMIZE_FOR_SIZE
 KBUILD_CFLAGS	+= -Os
