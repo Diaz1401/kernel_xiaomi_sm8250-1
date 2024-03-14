@@ -944,7 +944,7 @@ DISABLE_LTO_CLANG := -fno-lto
 export DISABLE_LTO_CLANG
 
 # -O3 optimization level for LTO
-KBUILD_LDFLAGS	+= --lto-O3
+KBUILD_LDFLAGS	+= --lto-O3 --lto-CGO3
 endif
 
 ifdef CONFIG_LTO
