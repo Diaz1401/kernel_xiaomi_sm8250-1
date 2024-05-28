@@ -23,7 +23,7 @@ CONFIG_PTPSUPPORT_OBJ=y
 endif
 
 emacdir			= $(prefix)/emac
-emac_CFLAGS	= -Werror
+emac_CFLAGS	=
 
 
 KERNEL_FLAGS ?= ARCH=arm
