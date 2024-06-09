@@ -694,7 +694,7 @@ static int qusb_phy_battery_supply_cb(struct notifier_block *nb,
 		qphy->vdda33_levels[1] = qphy->vdda33_levels[0];
 		qphy->vdda33_levels[2] = qphy->vdda33_levels[0];
 		qphy->low_soc = true;
-		queue_work(system_freezable_wq, &qphy->soc_eval_work);
+		queue_work(system_freezable_power_efficient_wq, &qphy->soc_eval_work);
 		return NOTIFY_OK;
 	}
 
@@ -703,7 +703,7 @@ static int qusb_phy_battery_supply_cb(struct notifier_block *nb,
 		qphy->vdda33_levels[1] = QUSB2PHY_3P3_VOL_MIN;
 		qphy->vdda33_levels[2] = QUSB2PHY_3P3_VOL_MAX;
 		qphy->low_soc = false;
-		queue_work(system_freezable_wq, &qphy->soc_eval_work);
+		queue_work(system_freezable_power_efficient_wq, &qphy->soc_eval_work);
 	}
 	return NOTIFY_OK;
 }
@@ -1152,7 +1152,7 @@ static irqreturn_t qphy_notifier_irq_handler(int irq, void *_qphy)
 
 		dev_dbg(qphy->phy.dev, "Got notification: %d\n",
 							qphy->is_port_valid);
-		queue_delayed_work(system_freezable_wq,
+		queue_delayed_work(system_freezable_power_efficient_wq,
 						&qphy->port_det_w, 0);
 	}
 
@@ -1199,7 +1199,7 @@ static int qusb_phy_vbus_notifier(struct notifier_block *nb,
 
 	qphy->vbus_active = !!event;
 	dev_dbg(qphy->phy.dev, "Got VBUS notification: %u\n", event);
-	queue_delayed_work(system_freezable_wq, &qphy->port_det_w, 0);
+	queue_delayed_work(system_freezable_power_efficient_wq, &qphy->port_det_w, 0);
 
 	return NOTIFY_DONE;
 }
@@ -1217,7 +1217,7 @@ static int qusb_phy_id_notifier(struct notifier_block *nb,
 
 	qphy->id_state = !event;
 	dev_dbg(qphy->phy.dev, "Got id notification: %u\n", event);
-	queue_delayed_work(system_freezable_wq, &qphy->port_det_w, 0);
+	queue_delayed_work(system_freezable_power_efficient_wq, &qphy->port_det_w, 0);
 
 	return NOTIFY_DONE;
 }
@@ -1560,7 +1560,7 @@ static void qusb_phy_port_state_work(struct work_struct *w)
 		return;
 	}
 
-	queue_delayed_work(system_freezable_wq,
+	queue_delayed_work(system_freezable_power_efficient_wq,
 			&qphy->port_det_w, msecs_to_jiffies(delay));
 }
 
@@ -1988,7 +1988,7 @@ static int qusb_phy_pm_resume(struct device *dev)
 	 * once the system wakes up.
 	 */
 	if (gpio_is_valid(qphy->notifier_gpio))
-		queue_delayed_work(system_freezable_wq, &qphy->port_det_w, 0);
+		queue_delayed_work(system_freezable_power_efficient_wq, &qphy->port_det_w, 0);
 
 	return 0;
 }

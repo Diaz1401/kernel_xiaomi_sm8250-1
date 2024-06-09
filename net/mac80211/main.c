@@ -311,7 +311,7 @@ void ieee80211_restart_hw(struct ieee80211_hw *hw)
 	local->in_reconfig = true;
 	barrier();
 
-	queue_work(system_freezable_wq, &local->restart_work);
+	queue_work(system_freezable_power_efficient_wq, &local->restart_work);
 }
 EXPORT_SYMBOL(ieee80211_restart_hw);
 

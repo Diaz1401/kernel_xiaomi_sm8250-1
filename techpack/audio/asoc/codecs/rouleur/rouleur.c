@@ -2039,7 +2039,7 @@ static int rouleur_battery_supply_cb(struct notifier_block *nb,
 
 	if (strcmp(psy->desc->name, "battery"))
 		return NOTIFY_OK;
-	queue_work(system_freezable_wq, &rouleur->soc_eval_work);
+	queue_work(system_freezable_power_efficient_wq, &rouleur->soc_eval_work);
 
 	return NOTIFY_OK;
 }
@@ -2231,7 +2231,7 @@ static int rouleur_soc_codec_probe(struct snd_soc_component *component)
 		dev_dbg(rouleur->dev,
 			"%s: could not register pwr supply notifier\n",
 			__func__);
-	queue_work(system_freezable_wq, &rouleur->soc_eval_work);
+	queue_work(system_freezable_power_efficient_wq, &rouleur->soc_eval_work);
 done:
 	return ret;
 }

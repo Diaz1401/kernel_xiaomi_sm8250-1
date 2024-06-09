@@ -934,7 +934,7 @@ static void vmballoon_doorbell(void *client_data)
 
 	STATS_INC(b->stats.doorbell);
 
-	mod_delayed_work(system_freezable_wq, &b->dwork, 0);
+	mod_delayed_work(system_freezable_power_efficient_wq, &b->dwork, 0);
 }
 
 /*
@@ -1060,7 +1060,7 @@ static void vmballoon_work(struct work_struct *work)
 	 * We are using a freezable workqueue so that balloon operations are
 	 * stopped while the system transitions to/from sleep/hibernation.
 	 */
-	queue_delayed_work(system_freezable_wq,
+	queue_delayed_work(system_freezable_power_efficient_wq,
 			   dwork, round_jiffies_relative(HZ));
 }
 
@@ -1205,7 +1205,7 @@ static int __init vmballoon_init(void)
 	balloon.page = NULL;
 	balloon.reset_required = true;
 
-	queue_delayed_work(system_freezable_wq, &balloon.dwork, 0);
+	queue_delayed_work(system_freezable_power_efficient_wq, &balloon.dwork, 0);
 
 	return 0;
 }

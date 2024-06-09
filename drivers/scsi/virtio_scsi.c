@@ -399,7 +399,7 @@ static void virtscsi_complete_event(struct virtio_scsi *vscsi, void *buf)
 	struct virtio_scsi_event_node *event_node = buf;
 
 	if (!vscsi->stop_events)
-		queue_work(system_freezable_wq, &event_node->work);
+		queue_work(system_freezable_power_efficient_wq, &event_node->work);
 }
 
 static void virtscsi_event_done(struct virtqueue *vq)

@@ -302,7 +302,7 @@ static void stats_request(struct virtqueue *vq)
 
 	spin_lock(&vb->stop_update_lock);
 	if (!vb->stop_update)
-		queue_work(system_freezable_wq, &vb->update_balloon_stats_work);
+		queue_work(system_freezable_power_efficient_wq, &vb->update_balloon_stats_work);
 	spin_unlock(&vb->stop_update_lock);
 }
 
@@ -329,7 +329,7 @@ static void virtballoon_changed(struct virtio_device *vdev)
 
 	spin_lock_irqsave(&vb->stop_update_lock, flags);
 	if (!vb->stop_update)
-		queue_work(system_freezable_wq, &vb->update_balloon_size_work);
+		queue_work(system_freezable_power_efficient_wq, &vb->update_balloon_size_work);
 	spin_unlock_irqrestore(&vb->stop_update_lock, flags);
 }
 
@@ -390,7 +390,7 @@ static void update_balloon_size_func(struct work_struct *work)
 	update_balloon_size(vb);
 
 	if (diff)
-		queue_work(system_freezable_wq, work);
+		queue_work(system_freezable_power_efficient_wq, work);
 }
 
 static int init_vqs(struct virtio_balloon *vb)
