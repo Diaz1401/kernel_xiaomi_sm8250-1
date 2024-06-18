@@ -630,7 +630,7 @@ endif
 all: vmlinux
 
 ifeq ($(CONFIG_PGO_GEN),y)
-CFLAGS_GCOV := -fprofile-generate
+CFLAGS_GCOV := -fprofile-generate -fkernel-pgo
 else
 CFLAGS_GCOV := --coverage
 endif
