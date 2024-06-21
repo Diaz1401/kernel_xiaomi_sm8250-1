@@ -15,6 +15,7 @@ $(obj)/mem.o: $(srctree)/arch/s390/lib/mem.S FORCE
 
 KCOV_INSTRUMENT := n
 GCOV_PROFILE := n
+PGO_PROFILE := n
 UBSAN_SANITIZE := n
 KASAN_SANITIZE := n
 

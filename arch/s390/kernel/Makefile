@@ -17,6 +17,9 @@ endif
 GCOV_PROFILE_early.o		:= n
 GCOV_PROFILE_early_nobss.o	:= n
 
+PGO_PROFILE_early.o		:= n
+PGO_PROFILE_early_nobss.o	:= n
+
 KCOV_INSTRUMENT_early.o		:= n
 KCOV_INSTRUMENT_early_nobss.o	:= n
 

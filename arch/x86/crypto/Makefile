@@ -151,3 +151,7 @@ quiet_cmd_perlasm = PERLASM $@
       cmd_perlasm = $(PERL) $< > $@
 $(obj)/%.S: $(src)/%.pl FORCE
 	$(call if_changed,perlasm)
+
+# Disable GCOV and PGO in odd or sensitive code
+GCOV_PROFILE_curve25519-x86_64.o := n
+PGO_PROFILE_curve25519-x86_64.o := n

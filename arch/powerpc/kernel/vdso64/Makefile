@@ -8,8 +8,9 @@ obj-vdso64 = sigtramp.o gettimeofday.o datapage.o cacheflush.o note.o getcpu.o
 targets := $(obj-vdso64) vdso64.so vdso64.so.dbg
 obj-vdso64 := $(addprefix $(obj)/, $(obj-vdso64))
 
-GCOV_PROFILE := n
-UBSAN_SANITIZE := n
+GCOV_PROFILE	:= n
+PGO_PROFILE	:= n
+UBSAN_SANITIZE	:= n
 
 ccflags-y := -shared -fno-common -fno-builtin
 ccflags-y += -nostdlib -Wl,-soname=linux-vdso64.so.1 \

@@ -1012,6 +1012,7 @@ config RELR
 	  are compatible).
 
 source "kernel/gcov/Kconfig"
+source "kernel/pgo/Kconfig"
 
 source "scripts/gcc-plugins/Kconfig"
 

@@ -23,6 +23,7 @@ endif
 
 # Disable gcov profiling for VDSO code
 GCOV_PROFILE := n
+PGO_PROFILE := n
 
 # Force dependency
 $(obj)/vdso.o: $(obj)/vdso.so
