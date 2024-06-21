@@ -45,6 +45,7 @@ obj-$(CONFIG_UNCACHED_MAPPING)	+= uncached.o
 obj-$(CONFIG_HAVE_SRAM_POOL)	+= sram.o
 
 GCOV_PROFILE_pmb.o := n
+PGO_PROFILE_pmb.o := n
 
 # Special flags for tlbex_64.o.  This puts restrictions on the number of
 # caller-save registers that the compiler can target when building this file.

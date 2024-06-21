@@ -7,6 +7,7 @@
 #
 
 GCOV_PROFILE	:= n
+PGO_PROFILE	:= n
 
 LDFLAGS_bootp	:= --no-undefined -X \
 		 --defsym initrd_phys=$(INITRD_PHYS) \

@@ -612,6 +612,8 @@ endif
 # This allow a user to issue only 'make' to build a kernel including modules
 # Defaults to vmlinux, but the arch makefile usually adds further targets
 all: vmlinux
+CFLAGS_PGO_CLANG := -fprofile-generate
+export CFLAGS_PGO_CLANG
 
 ifeq ($(CONFIG_PGO_GEN),y)
 CFLAGS_GCOV := -fprofile-generate -fkernel-pgo

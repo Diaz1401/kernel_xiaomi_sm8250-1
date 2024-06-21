@@ -16,9 +16,9 @@ ccflags-y += -nostdlib -Wl,-soname=linux-vdso.so.1 \
 		$(call cc-ldoption, -Wl$(comma)--hash-style=sysv)
 ccflags-y += -fPIC -Wl,-shared -g
 
-# Disable gcov profiling for VDSO code
-GCOV_PROFILE := n
-
+# Disable gcov & pgo profiling for VDSO code
+GCOV_PROFILE	:= n
+PGO_PROFILE	:= n
 
 obj-y += vdso.o
 targets += vdso.lds

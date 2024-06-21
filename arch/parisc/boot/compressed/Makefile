@@ -6,6 +6,7 @@
 
 KCOV_INSTRUMENT := n
 GCOV_PROFILE := n
+PGO_PROFILE := n
 UBSAN_SANITIZE := n
 
 targets := vmlinux.lds vmlinux vmlinux.bin vmlinux.bin.gz vmlinux.bin.bz2

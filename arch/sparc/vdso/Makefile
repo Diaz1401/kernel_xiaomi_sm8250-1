@@ -116,6 +116,7 @@ quiet_cmd_vdso = VDSO    $@
 VDSO_LDFLAGS = -fPIC -shared $(call cc-ldoption, -Wl$(comma)--hash-style=sysv) \
 	$(call cc-ldoption, -Wl$(comma)--build-id) -Wl,-Bsymbolic
 GCOV_PROFILE := n
+PGO_PROFILE := n
 
 #
 # Install the unstripped copies of vdso*.so.  If our toolchain supports

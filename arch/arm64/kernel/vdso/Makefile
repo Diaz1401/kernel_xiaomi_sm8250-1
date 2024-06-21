@@ -46,8 +46,9 @@ ifneq ($(c-gettimeofday-y),)
   CFLAGS_vgettimeofday.o += -include $(c-gettimeofday-y)
 endif
 
-# Disable gcov profiling for VDSO code
+# Disable gcov and PGO profiling for VDSO code
 GCOV_PROFILE := n
+PGO_PROFILE := n
 
 obj-y += vdso.o
 targets += vdso.lds

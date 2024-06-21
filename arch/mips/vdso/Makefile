@@ -73,6 +73,7 @@ VDSO_LDFLAGS := \
 CFLAGS_REMOVE_vdso.o = -pg
 
 GCOV_PROFILE := n
+PGO_PROFILE := n
 
 #
 # Shared build commands.

@@ -23,7 +23,8 @@ whole; patches welcome!
    kmemleak
    gdb-kernel-debugging
    kgdb
-   kselftest
+   kselftes
+   pgo
 
 
 .. only::  subproject and html
