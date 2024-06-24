@@ -717,8 +717,7 @@ KBUILD_CFLAGS	+= $(call cc-disable-warning, format-overflow)
 KBUILD_CFLAGS	+= $(call cc-disable-warning, int-in-bool-context)
 KBUILD_CFLAGS	+= $(call cc-disable-warning, address-of-packed-member)
 
-cat_arch_flags	:= -mcpu=cortex-a77+crypto \
-		 -march=armv8.2-a+crypto
+cat_arch_flags	:= -mcpu=cortex-a77
 cat_gcc_flags	:= -fipa-pta \
 		 -fgraphite \
 		 -fgraphite-identity \
@@ -750,6 +749,9 @@ endif
 ifdef CONFIG_CAT_OPTIMIZE
 KBUILD_CFLAGS	+= $(cat_arch_flags)
 KBUILD_AFLAGS	+= $(cat_arch_flags)
+ifneq ($(LLVM),)
+KBUILD_LDFLAGS	+= -mllvm $(cat_arch_flags)
+endif
 ifeq ($(cc-name),clang)
 KBUILD_CFLAGS	+= $(cat_llvm_flags)
 KBUILD_AFLAGS	+= $(cat_llvm_flags)
