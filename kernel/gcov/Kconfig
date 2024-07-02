@@ -2,7 +2,7 @@ menu "GCOV-based kernel profiling"
 
 config PGO_GEN
 	bool "Enable profiling for kernel"
-	depends on CC_IS_GCC && GCC_VERSION > 100000
+	depends on CC_IS_GCC && GCC_VERSION > 100000 && GCC_VERSION < 110000
 	select GCOV_KERNEL
 	select GCOV_PROFILE_ALL
 	default n
@@ -13,7 +13,7 @@ config PGO_GEN
 
 config PGO_USE
 	bool "Use generated profile to optimize the kernel"
-	depends on CC_IS_GCC && GCC_VERSION > 100000
+	depends on CC_IS_GCC && GCC_VERSION > 100000 && GCC_VERSION < 110000
 	default n
 	---help---
 	This option use profile generated from profiling stage to optimize the kernel.
