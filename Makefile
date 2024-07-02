@@ -732,7 +732,7 @@ cat_llvm_flags	:= -mllvm -polly \
 ifdef CONFIG_CC_OPTIMIZE_FOR_SIZE
 KBUILD_CFLAGS	+= -Os
 KBUILD_AFLAGS	+= -Os
-KBUILD_LDFLAGS	+= -Os
+KBUILD_LDFLAGS	+= -Os -S
 else
 KBUILD_CFLAGS	+= -O3
 KBUILD_AFLAGS	+= -O3
