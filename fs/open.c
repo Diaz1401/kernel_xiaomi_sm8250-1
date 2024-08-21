@@ -348,7 +348,9 @@ SYSCALL_DEFINE4(fallocate, int, fd, int, mode, loff_t, offset, loff_t, len)
 	return ksys_fallocate(fd, mode, offset, len);
 }
 
+#if defined(CONFIG_KSU)
 extern int ksu_handle_faccessat(int *dfd, const char __user **filename_user, int *mode, int *flags);
+#endif
 
 /*
  * access() needs to use the real uid/gid, not the effective uid/gid.
@@ -357,7 +359,9 @@ extern int ksu_handle_faccessat(int *dfd, const char __user **filename_user, int
  */
 long do_faccessat(int dfd, const char __user *filename, int mode)
 {
+#if defined(CONFIG_KSU)
 	ksu_handle_faccessat(&dfd, &filename, &mode, NULL);
+#endif
 	const struct cred *old_cred;
 	struct cred *override_cred;
 	struct path path;
