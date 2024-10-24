@@ -15,7 +15,7 @@ testing: &TESTING
 main: &MAIN
   only_if: $CIRRUS_BRANCH == 'kucing-2k24'
 container:
-  image: diazaji/debian:kernel
+  image: diazaji/ubuntu:kernel
   cpu: 8
   memory: 16G
 standard_task:
@@ -26,7 +26,7 @@ standard_task:
     - wget -qO build.sh https://raw.githubusercontent.com/Diaz1401/build-script/alioth/build.sh
     - bash build.sh clang stable opt dce
     - rm -rf out && mkdir -p out && git checkout -f
-    - bash build.sh gcc stable-20240819-2023-WIB opt dce
+    - bash build.sh gcc stable-20241022-1716-Asia opt dce
 pgo_task:
   << : *GIT_FETCH_TEMPLATE
   << : *MAIN
@@ -35,9 +35,9 @@ pgo_task:
     - wget -qO build.sh https://raw.githubusercontent.com/Diaz1401/build-script/alioth/build.sh
     - wget -qO calcsum.cpp https://raw.githubusercontent.com/openeuler-mirror/A-FOT/master/GcovSummaryAddTool.cpp
     - g++ -o calcsum calcsum.cpp
-    - bash build.sh gcc stable-20240615-1407-WIB opt dce pgo_gen
+    - bash build.sh gcc stable-20241022-1716-Asia opt dce pgo_gen
     - rm -rf out && mkdir -p out && git checkout -f
     - tar xf profiles.tar.gz -C out
     - find out -name "*.gcda" > list.txt
     - ./calcsum list.txt
-    - bash build.sh gcc stable-20240615-1407-WIB opt dce pgo_use keep
+    - bash build.sh gcc stable-20241022-1716-Asia opt dce pgo_use keep
