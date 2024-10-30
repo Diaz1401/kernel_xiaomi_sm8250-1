@@ -1723,7 +1723,7 @@ static enum oom_status mem_cgroup_oom(struct mem_cgroup *memcg, gfp_t mask, int 
 	 * victim and then we have to bail out from the charge path.
 	 */
 	if (memcg->oom_kill_disable) {
-		if (!task_in_user_fault())
+		if (!current->in_user_fault)
 			return OOM_SKIPPED;
 		css_get(&memcg->css);
 		current->memcg_in_oom = memcg;
@@ -2399,7 +2399,7 @@ static void lock_page_lru(struct page *page, int *isolated)
 
 		lruvec = mem_cgroup_page_lruvec(page, zone->zone_pgdat);
 		ClearPageLRU(page);
-		del_page_from_lru_list(page, lruvec);
+		del_page_from_lru_list(page, lruvec, page_lru(page));
 		*isolated = 1;
 	} else
 		*isolated = 0;
@@ -2415,7 +2415,7 @@ static void unlock_page_lru(struct page *page, int isolated)
 		lruvec = mem_cgroup_page_lruvec(page, zone->zone_pgdat);
 		VM_BUG_ON_PAGE(PageLRU(page), page);
 		SetPageLRU(page);
-		add_page_to_lru_list(page, lruvec);
+		add_page_to_lru_list(page, lruvec, page_lru(page));
 	}
 	spin_unlock_irq(zone_lru_lock(zone));
 }
@@ -3523,8 +3523,8 @@ static int memcg_stat_show(struct seq_file *m, void *v)
 		pg_data_t *pgdat;
 		struct mem_cgroup_per_node *mz;
 		struct zone_reclaim_stat *rstat;
-		unsigned long recent_rotated[ANON_AND_FILE] = {};
-		unsigned long recent_scanned[ANON_AND_FILE] = {};
+		unsigned long recent_rotated[2] = {0, 0};
+		unsigned long recent_scanned[2] = {0, 0};
 
 		for_each_online_pgdat(pgdat) {
 			mz = mem_cgroup_nodeinfo(memcg, pgdat->node_id);
@@ -4517,7 +4517,6 @@ static void __mem_cgroup_free(struct mem_cgroup *memcg)
 	for_each_node(node)
 		free_mem_cgroup_per_node_info(memcg, node);
 	free_percpu(memcg->stat_cpu);
-	lru_gen_free_mm_list(memcg);
 	kfree(memcg);
 }
 
@@ -4553,9 +4552,6 @@ static struct mem_cgroup *mem_cgroup_alloc(void)
 	for_each_node(node)
 		if (alloc_mem_cgroup_per_node_info(memcg, node))
 			goto fail;
-
-	if (lru_gen_alloc_mm_list(memcg))
-		goto fail;
 
 	if (memcg_wb_domain_init(memcg, GFP_KERNEL))
 		goto fail;
@@ -5450,29 +5446,6 @@ static void mem_cgroup_move_task(void)
 }
 #endif
 
-#ifdef CONFIG_LRU_GEN
-static void mem_cgroup_attach(struct cgroup_taskset *tset)
-{
-	struct cgroup_subsys_state *css;
-	struct task_struct *task = NULL;
-
-	cgroup_taskset_for_each_leader(task, css, tset)
-		break;
-
-	if (!task)
-		return;
-
-	task_lock(task);
-	if (task->mm && task->mm->owner == task)
-		lru_gen_migrate_mm(task->mm);
-	task_unlock(task);
-}
-#else
-static void mem_cgroup_attach(struct cgroup_taskset *tset)
-{
-}
-#endif
-
 /*
  * Cgroup retains root cgroups across [un]mount cycles making it necessary
  * to verify whether we're attached to the default hierarchy on each mount
@@ -5842,7 +5815,6 @@ struct cgroup_subsys memory_cgrp_subsys = {
 	.css_free = mem_cgroup_css_free,
 	.css_reset = mem_cgroup_css_reset,
 	.can_attach = mem_cgroup_can_attach,
-	.attach = mem_cgroup_attach,
 	.cancel_attach = mem_cgroup_cancel_attach,
 	.post_attach = mem_cgroup_move_task,
 	.bind = mem_cgroup_bind,
