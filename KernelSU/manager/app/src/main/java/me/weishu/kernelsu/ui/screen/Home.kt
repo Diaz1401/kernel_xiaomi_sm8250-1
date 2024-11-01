@@ -128,9 +128,7 @@ fun UpdateCard() {
             message = stringResource(id = R.string.new_version_available).format(newVersionCode),
             MaterialTheme.colorScheme.outlineVariant
         ) {
-            if (changelog.isEmpty()) {
-                uriHandler.openUri(newVersionUrl)
-            } else {
+            if (changelog.isNotEmpty()) {
                 updateDialog.showConfirm(
                     title = title,
                     content = changelog,
@@ -416,8 +414,8 @@ private fun InfoCard() {
 }
 
 fun getManagerVersion(context: Context): Pair<String, Int> {
-    val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)!!
-    return Pair(packageInfo.versionName!!, packageInfo.versionCode)
+    val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
+    return Pair(packageInfo.versionName, packageInfo.versionCode)
 }
 
 @Preview

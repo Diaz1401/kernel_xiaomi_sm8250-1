@@ -34,7 +34,6 @@ android {
         aidl = true
         buildConfig = true
         compose = true
-        prefab = true
     }
 
     kotlinOptions {
@@ -114,6 +113,4 @@ dependencies {
 
     implementation(libs.markdown)
     implementation(libs.androidx.webkit)
-
-    implementation(libs.lsposed.cxx)
 }
