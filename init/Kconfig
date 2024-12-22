@@ -1319,7 +1319,7 @@ if CPUSET_ASSIST
 
 config CPUSET_AUDIO_APP
 	string "Value for 'audio-app' cpuset"
-	default "1-2"
+	default "0-3"
 	help
 	  The CPU mask to use for the audio-app cpuset.
 
@@ -1337,7 +1337,7 @@ config CPUSET_CAMERA
 
 config CPUSET_DISPLAY
 	string "Value for 'display' cpuset"
-	default "4-7"
+	default "4-6"
 	help
 	  The CPU mask to use for the display cpuset.
 
