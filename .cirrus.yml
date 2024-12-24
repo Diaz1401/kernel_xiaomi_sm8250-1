@@ -11,7 +11,7 @@ git_fetch_template: &GIT_FETCH_TEMPLATE
     git fetch --depth=1 origin $CIRRUS_CHANGE_IN_REPO
     git checkout $CIRRUS_CHANGE_IN_REPO -b $CIRRUS_BRANCH
 testing: &TESTING
-  only_if: $CIRRUS_BRANCH == 'kucing-2k24-testing' || $CIRRUS_BRANCH == 'kucing-2k24'
+  only_if: $CIRRUS_BRANCH != 'kucing-2k24'
 main: &MAIN
   only_if: $CIRRUS_BRANCH == 'kucing-2k24'
 container:
