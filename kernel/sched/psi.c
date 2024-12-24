@@ -140,9 +140,6 @@
 #include <linux/file.h>
 #include <linux/poll.h>
 #include <linux/psi.h>
-
-#define CREATE_TRACE_POINTS
-#include <trace/events/psi.h>
 #include "sched.h"
 
 static int psi_bug __read_mostly;
@@ -534,8 +531,6 @@ static u64 update_triggers(struct psi_group *group, u64 now)
 
 		/* Calculate growth since last update */
 		growth = window_update(&t->win, now, total[t->state]);
-		trace_psi_update_trigger_growth(t, now, growth);
-
 		if (growth < t->threshold)
 			continue;
 
@@ -544,10 +539,8 @@ static u64 update_triggers(struct psi_group *group, u64 now)
 			continue;
 
 		/* Generate an event */
-		if (cmpxchg(&t->event, 0, 1) == 0) {
-			trace_psi_update_trigger_wake_up(t, growth);
+		if (cmpxchg(&t->event, 0, 1) == 0)
 			wake_up_interruptible(&t->event_wait);
-		}
 		t->last_event_time = now;
 	}
 
