@@ -130,18 +130,6 @@ static inline void tlb_remove_page_size(struct mmu_gather *tlb,
 	return tlb_remove_page(tlb, page);
 }
 
-static inline void
-tlb_flush_pmd_range(struct mmu_gather *tlb, unsigned long address,
-		    unsigned long size)
-{
-	tlb->need_flush = 1;
-
-	if (tlb->start > address)
-		tlb->start = address;
-	if (tlb->end < address + size)
-		tlb->end = address + size;
-}
-
 /**
  * tlb_remove_tlb_entry - remember a pte unmapping for later tlb invalidation.
  *
@@ -158,9 +146,7 @@ tlb_flush_pmd_range(struct mmu_gather *tlb, unsigned long address,
 #define tlb_remove_huge_tlb_entry(h, tlb, ptep, address)	\
 	tlb_remove_tlb_entry(tlb, ptep, address)
 
-#define tlb_remove_check_page_size_change tlb_remove_check_page_size_change
-static inline void tlb_remove_check_page_size_change(struct mmu_gather *tlb,
-						     unsigned int page_size)
+static inline void tlb_change_page_size(struct mmu_gather *tlb, unsigned int page_size)
 {
 }
 

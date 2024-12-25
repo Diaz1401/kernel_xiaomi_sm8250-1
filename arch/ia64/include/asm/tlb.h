@@ -268,16 +268,6 @@ __tlb_remove_tlb_entry (struct mmu_gather *tlb, pte_t *ptep, unsigned long addre
 	tlb->end_addr = address + PAGE_SIZE;
 }
 
-static inline void
-tlb_flush_pmd_range(struct mmu_gather *tlb, unsigned long address,
-		    unsigned long size)
-{
-	if (tlb->start_addr > address)
-		tlb->start_addr = address;
-	if (tlb->end_addr < address + size)
-		tlb->end_addr = address + size;
-}
-
 #define tlb_migrate_finish(mm)	platform_tlb_migrate_finish(mm)
 
 #define tlb_start_vma(tlb, vma)			do { } while (0)
@@ -292,8 +282,7 @@ do {							\
 #define tlb_remove_huge_tlb_entry(h, tlb, ptep, address)	\
 	tlb_remove_tlb_entry(tlb, ptep, address)
 
-#define tlb_remove_check_page_size_change tlb_remove_check_page_size_change
-static inline void tlb_remove_check_page_size_change(struct mmu_gather *tlb,
+static inline void tlb_change_page_size(struct mmu_gather *tlb,
 						     unsigned int page_size)
 {
 }
