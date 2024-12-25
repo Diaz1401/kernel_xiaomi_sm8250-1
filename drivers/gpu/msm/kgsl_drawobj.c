@@ -405,7 +405,6 @@ EXPORT_SYMBOL(kgsl_drawobj_destroy);
 static bool drawobj_sync_fence_func(void *priv)
 {
 	struct kgsl_drawobj_sync_event *event = priv;
-	int i;
 
 	/*
 	 * Only call kgsl_drawobj_put() if it's not marked for cancellation
