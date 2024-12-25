@@ -22,6 +22,7 @@ enum msm_ion_heap_types {
 	ION_HEAP_TYPE_SYSTEM_SECURE,
 	ION_HEAP_TYPE_HYP_CMA,
 	ION_HEAP_TYPE_SECURE_CARVEOUT,
+	ION_HEAP_TYPE_CAMERA,
 };
 
 /**
@@ -107,7 +108,7 @@ struct ion_prefetch_regions {
 };
 
 struct ion_prefetch_data {
-	__u64 len;
+	__u64 unused;
 	__u64 regions;
 	__u32 heap_id;
 	__u32 nr_regions;
