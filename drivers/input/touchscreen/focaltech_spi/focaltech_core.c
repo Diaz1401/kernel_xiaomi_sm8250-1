@@ -140,8 +140,6 @@ void fts_tp_state_recovery(struct fts_ts_data *ts_data)
 	/* recover TP glove state 0xC0 */
 	/* recover TP cover state 0xC1 */
 	fts_ex_mode_recovery(ts_data);
-	/* recover TP gesture state 0xD0 */
-	fts_gesture_recovery(ts_data);
 #ifdef CONFIG_TOUCHSCREEN_XIAOMI_TOUCHFEATURE
 	/* recover TP game mode state */
 	fts_game_mode_recovery(ts_data);
@@ -494,13 +492,6 @@ static int fts_input_report_b(struct fts_ts_data *data)
 			input_mt_report_slot_state(data->input_dev,
 						   MT_TOOL_FINGER, true);
 
-#if FTS_REPORT_PRESSURE_EN
-			if (events[i].p <= 0) {
-				events[i].p = 0x3f;
-			}
-			input_report_abs(data->input_dev, ABS_MT_PRESSURE,
-					 events[i].p);
-#endif
 			if (events[i].area <= 0) {
 				events[i].area = 0x09;
 			}
@@ -576,13 +567,6 @@ static int fts_input_report_a(struct fts_ts_data *data)
 		if (EVENT_DOWN(events[i].flag)) {
 			input_report_abs(data->input_dev, ABS_MT_TRACKING_ID,
 					 events[i].id);
-#if FTS_REPORT_PRESSURE_EN
-			if (events[i].p <= 0) {
-				events[i].p = 0x3f;
-			}
-			input_report_abs(data->input_dev, ABS_MT_PRESSURE,
-					 events[i].p);
-#endif
 			if (events[i].area <= 0) {
 				events[i].area = 0x09;
 			}
@@ -647,14 +631,6 @@ static int fts_read_touchdata(struct fts_ts_data *data)
 	if (data->palm_sensor_switch)
 		fts_read_palm_data(buf[1]);
 #endif
-
-	if (data->gesture_mode) {
-		ret = fts_gesture_readdata(data, buf + FTS_TOUCH_DATA_LEN);
-		if (0 == ret) {
-			FTS_INFO("succuss to get gesture data in irq handler");
-			return 1;
-		}
-	}
 
 	if (data->log_level >= 3) {
 		fts_show_touch_buffer(buf, data->pnt_buf_size);
@@ -734,10 +710,6 @@ static void fts_irq_read_report(void)
 {
 	int ret = 0;
 	struct fts_ts_data *ts_data = fts_data;
-
-#if FTS_POINT_REPORT_CHECK_EN
-	fts_prc_queue_work(ts_data);
-#endif
 
 	ret = fts_read_parse_touchdata(ts_data);
 	if (ret == 0) {
@@ -839,9 +811,6 @@ static int fts_input_init(struct fts_ts_data *ts_data)
 			     pdata->x_max - 1, 0, 0);
 	input_set_abs_params(input_dev, ABS_MT_POSITION_Y, pdata->y_min,
 			     pdata->y_max - 1, 0, 0);
-#if FTS_REPORT_PRESSURE_EN
-	input_set_abs_params(input_dev, ABS_MT_PRESSURE, 0, 0xFF, 0, 0);
-#endif
 
 	ret = input_register_device(input_dev);
 	if (ret) {
@@ -864,7 +833,7 @@ static int fts_report_buffer_init(struct fts_ts_data *ts_data)
 	int events_num = 0;
 
 	point_num = FTS_MAX_POINTS_SUPPORT;
-	ts_data->pnt_buf_size = FTS_TOUCH_DATA_LEN + FTS_GESTURE_DATA_LEN;
+	ts_data->pnt_buf_size = FTS_TOUCH_DATA_LEN;
 
 	ts_data->point_buf =
 		(u8 *)kzalloc(ts_data->pnt_buf_size + 1, GFP_KERNEL);
@@ -1681,29 +1650,10 @@ static int fts_ts_probe_entry(struct fts_ts_data *ts_data)
 		FTS_ERROR("create switch_state fail");
 	}
 
-#if FTS_POINT_REPORT_CHECK_EN
-	ret = fts_point_report_check_init(ts_data);
-	if (ret) {
-		FTS_ERROR("init point report check fail");
-	}
-#endif
-
 	ret = fts_ex_mode_init(ts_data);
 	if (ret) {
 		FTS_ERROR("init glove/cover/charger fail");
 	}
-
-	ret = fts_gesture_init(ts_data);
-	if (ret) {
-		FTS_ERROR("init gesture fail");
-	}
-
-#if FTS_TEST_EN
-	ret = fts_test_init(ts_data);
-	if (ret) {
-		FTS_ERROR("init production test fail");
-	}
-#endif
 
 	ret = fts_irq_registration(ts_data);
 	if (ret) {
@@ -1780,10 +1730,6 @@ static int fts_ts_remove_entry(struct fts_ts_data *ts_data)
 {
 	FTS_FUNC_ENTER();
 
-#if FTS_POINT_REPORT_CHECK_EN
-	fts_point_report_check_exit(ts_data);
-#endif
-
 	debugfs_remove_recursive(ts_data->tpdbg_dentry);
 	fts_remove_proc(ts_data);
 	fts_remove_sysfs(ts_data);
@@ -1791,11 +1737,6 @@ static int fts_ts_remove_entry(struct fts_ts_data *ts_data)
 
 	fts_fwupg_exit(ts_data);
 
-#if FTS_TEST_EN
-	fts_test_exit(ts_data);
-#endif
-
-	fts_gesture_exit(ts_data);
 	fts_bus_exit(ts_data);
 
 	free_irq(ts_data->irq, ts_data);
@@ -1863,25 +1804,21 @@ static int fts_ts_suspend(struct device *dev)
 #ifdef CONFIG_FACTORY_BUILD
 	ts_data->poweroff_on_sleep = true;
 #endif
-	if (ts_data->gesture_mode && !ts_data->poweroff_on_sleep) {
-		fts_gesture_suspend(ts_data);
-	} else {
-		fts_irq_disable();
+	fts_irq_disable();
 
-		FTS_INFO("make TP enter into sleep mode");
-		ret = fts_write_reg(FTS_REG_POWER_MODE,
-				    FTS_REG_POWER_MODE_SLEEP);
-		if (ret < 0)
-			FTS_ERROR("set TP to sleep mode fail, ret=%d", ret);
+	FTS_INFO("make TP enter into sleep mode");
+	ret = fts_write_reg(FTS_REG_POWER_MODE,
+				FTS_REG_POWER_MODE_SLEEP);
+	if (ret < 0)
+		FTS_ERROR("set TP to sleep mode fail, ret=%d", ret);
 
-		if (!ts_data->ic_info.is_incell && ts_data->poweroff_on_sleep) {
+	if (!ts_data->ic_info.is_incell && ts_data->poweroff_on_sleep) {
 #if FTS_POWER_SOURCE_CUST_EN
-			ret = fts_power_source_suspend(ts_data);
-			if (ret < 0) {
-				FTS_ERROR("power enter suspend fail");
-			}
-#endif
+		ret = fts_power_source_suspend(ts_data);
+		if (ret < 0) {
+			FTS_ERROR("power enter suspend fail");
 		}
+#endif
 	}
 
 	fts_release_all_finger();
@@ -1919,11 +1856,7 @@ static int fts_ts_resume(struct device *dev)
 	}
 #endif
 
-	if (ts_data->gesture_mode && !ts_data->poweroff_on_sleep) {
-		fts_gesture_resume(ts_data);
-	} else {
-		fts_irq_enable();
-	}
+	fts_irq_enable();
 
 	ts_data->poweroff_on_sleep = false;
 	ts_data->suspended = false;
@@ -1957,22 +1890,6 @@ static const struct dev_pm_ops fts_dev_pm_ops = {
 	.resume = fts_pm_resume,
 };
 #endif
-
-void fts_update_gesture_state(struct fts_ts_data *ts_data, int bit, bool enable)
-{
-	if (ts_data->suspended) {
-		FTS_ERROR("TP is suspended, do not update gesture state");
-		return;
-	}
-	mutex_lock(&ts_data->input_dev->mutex);
-	if (enable)
-		ts_data->gesture_status |= 1 << bit;
-	else
-		ts_data->gesture_status &= ~(1 << bit);
-	FTS_INFO("gesture state:0x%02X", ts_data->gesture_status);
-	ts_data->gesture_mode = ts_data->gesture_status != 0 ? ENABLE : DISABLE;
-	mutex_unlock(&ts_data->input_dev->mutex);
-}
 
 #ifdef CONFIG_TOUCHSCREEN_XIAOMI_TOUCHFEATURE
 static struct xiaomi_touch_interface xiaomi_touch_interfaces;
@@ -2343,14 +2260,6 @@ static int fts_set_cur_value(int mode, int value)
 	if (mode >= Touch_Mode_NUM) {
 		FTS_ERROR("mode is error:%d", mode);
 		return -EINVAL;
-	} else if (mode == Touch_Doubletap_Mode && value >= 0) {
-		fts_update_gesture_state(fts_data, GESTURE_DOUBLETAP,
-					 value != 0 ? true : false);
-		return 0;
-	} else if (mode == Touch_Aod_Enable && value >= 0) {
-		fts_update_gesture_state(fts_data, GESTURE_AOD,
-					 value != 0 ? true : false);
-		return 0;
 	} else if (mode == Touch_Power_Status && value >= 0) {
 		fts_data->power_status = !!value;
 		fts_power_status_handle(fts_data);
