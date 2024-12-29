@@ -8,9 +8,10 @@
 #include "kgsl_gmu_core.h"
 #include "kgsl_hfi.h"
 
-#define GMU_PWR_LEVELS  2
-#define GMU_FREQUENCY   200000000
-#define MAX_GMUFW_SIZE	0x8000	/* in bytes */
+#define GMU_PWR_LEVELS		2
+#define GMU_FREQUENCY		100000000
+#define MAX_GMUFW_SIZE		0x8000	/* in bytes */
+#define GMU_VOLTAGE_LEVEL	1
 
 #define BWMEM_SIZE	(12 + (4 * NUM_BW_LEVELS))	/*in bytes*/
 
