@@ -3,7 +3,6 @@
  * Copyright (c) 2017-2020, The Linux Foundation. All rights reserved.
  */
 
-#include <dt-bindings/regulator/qcom,rpmh-regulator-levels.h>
 #include <linux/delay.h>
 #include <linux/firmware.h>
 #include <linux/io.h>
@@ -694,7 +693,7 @@ static int rpmh_gmu_arc_votes_init(struct gmu_device *gmu,
 		struct rpmh_arc_vals *pri_rail, struct rpmh_arc_vals *sec_rail)
 {
 	/* Hardcoded values of GMU CX voltage levels */
-	u16 gmu_cx_vlvl[] = { 0, RPMH_REGULATOR_LEVEL_MIN_SVS };
+	u16 gmu_cx_vlvl[] = { 0, GMU_VOLTAGE_LEVEL };
 
 	return setup_volt_dependency_tbl(gmu->rpmh_votes.cx_votes, pri_rail,
 						sec_rail, gmu_cx_vlvl, 2);
