@@ -21,6 +21,14 @@
 	ret;									\
 })
 
+#define OF_READ_STRING(node, prop, dst)						\
+({										\
+	int ret = of_property_read_string(node, prop, &(dst));			\
+	if (ret)								\
+		pr_err("%s: " prop " property missing\n", (node)->name);	\
+	ret;									\
+})
+
 struct thermal_zone {
 	u32 gold_khz;
 	u32 prime_khz;
@@ -29,6 +37,7 @@ struct thermal_zone {
 };
 
 struct thermal_drv {
+	const char *zone_name;
 	struct notifier_block cpu_notif;
 	struct delayed_work throttle_work;
 	struct workqueue_struct *wq;
@@ -61,25 +70,28 @@ static void thermal_throttle_worker(struct work_struct *work)
 {
 	struct thermal_drv *t = container_of(to_delayed_work(work), typeof(*t),
 					     throttle_work);
-	struct thermal_zone *new_zone, *old_zone;
-	int temp = 0, temp_avg = 0;
+	struct thermal_zone *new_zone = NULL, *old_zone = t->curr_zone;
+	int temp = 0, temp_final = 0;
 	s64 temp_total = 0;
 	short i = 0;
+	char zone[15];
 
-	for (i; i < NR_CPUS; i++) {
-		char zone_name[15];
-		sprintf(zone_name, "cpu-1-%i-usr", i);
-		thermal_zone_get_temp(thermal_zone_get_zone_by_name(zone_name), &temp);
-		temp_total += temp;
+	if (t->zone_name == NULL) {
+		for (i; i < NR_CPUS; i++) {
+			sprintf(zone, "cpu-1-%i-usr", i);
+			thermal_zone_get_temp(thermal_zone_get_zone_by_name(zone), &temp);
+			temp_total += temp;
+		}
+		temp_final = temp_total / NR_CPUS;
+		sprintf(zone, "average");
+	} else {
+		thermal_zone_get_temp(thermal_zone_get_zone_by_name(t->zone_name), &temp);
+		temp_final = temp;
+		sprintf(zone, t->zone_name);
 	}
 
-	temp_avg = temp_total / NR_CPUS;
-
-	old_zone = t->curr_zone;
-	new_zone = NULL;
-
 	for (i = t->nr_zones - 1; i >= 0; i--) {
-		if (temp_avg >= t->zones[i].trip_deg) {
+		if (temp_final >= t->zones[i].trip_deg) {
 			new_zone = t->zones + i;
 			break;
 		}
@@ -87,7 +99,7 @@ static void thermal_throttle_worker(struct work_struct *work)
 
 	/* Update thermal zone if it changed */
 	if (new_zone != old_zone) {
-		pr_info("temp: %i\n", temp_avg);
+		pr_info("temp=%i, zone=%s\n", temp_final, zone);
 		t->curr_zone = new_zone;
 		update_online_cpu_policy();
 	}
@@ -140,6 +152,9 @@ static int msm_thermal_simple_parse_dt(struct platform_device *pdev,
 	/* Specifying a start delay is optional */
 	OF_READ_U32(node, "qcom,start-delay", t->start_delay);
 
+	/* Specifying a thermal zone is optional */
+	OF_READ_STRING(node, "qcom,thermal-zone", t->zone_name);
+
 	/* Convert polling milliseconds to jiffies */
 	t->poll_jiffies = msecs_to_jiffies(t->poll_jiffies);
 
@@ -177,7 +192,6 @@ static int msm_thermal_simple_parse_dt(struct platform_device *pdev,
 		ret = OF_READ_U32(child, "qcom,prime-khz", zone->prime_khz);
 		if (ret)
 			goto free_zones;
-
 
 		ret = OF_READ_U32(child, "qcom,trip-deg", zone->trip_deg);
 		if (ret)
