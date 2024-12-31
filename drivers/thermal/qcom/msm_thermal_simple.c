@@ -29,6 +29,8 @@
 	ret;									\
 })
 
+#define WINDOW 5
+
 struct thermal_zone {
 	u32 gold_khz;
 	u32 prime_khz;
@@ -46,6 +48,9 @@ struct thermal_drv {
 	u32 poll_jiffies;
 	u32 start_delay;
 	u32 nr_zones;
+	int temp_history[WINDOW];
+	int temp_index;
+	bool wait;
 };
 
 static void update_online_cpu_policy(void)
@@ -72,7 +77,7 @@ static void thermal_throttle_worker(struct work_struct *work)
 					     throttle_work);
 	struct thermal_zone *new_zone = NULL, *old_zone = t->curr_zone;
 	int temp = 0, temp_final = 0;
-	s64 temp_total = 0;
+	s64 temp_sum = 0;
 	short i = 0;
 	char zone[15];
 
@@ -80,15 +85,38 @@ static void thermal_throttle_worker(struct work_struct *work)
 		for (i; i < NR_CPUS; i++) {
 			sprintf(zone, "cpu-1-%i-usr", i);
 			thermal_zone_get_temp(thermal_zone_get_zone_by_name(zone), &temp);
-			temp_total += temp;
+			temp_sum += temp;
 		}
-		temp_final = temp_total / NR_CPUS;
+		temp_final = temp_sum / NR_CPUS;
 		sprintf(zone, "average");
 	} else {
 		thermal_zone_get_temp(thermal_zone_get_zone_by_name(t->zone_name), &temp);
 		temp_final = temp;
 		sprintf(zone, t->zone_name);
 	}
+
+	// Store the current temperature
+	t->temp_history[t->temp_index] = temp_final;
+	t->temp_index = (t->temp_index + 1) % WINDOW;
+
+	// Wait until history is ready
+	if (t->wait) {
+		if (t->temp_index == 0) {
+			pr_info("init 100%%\n");
+			t->wait = false;
+		} else {
+			pr_info("init %i%%\n", (t->temp_index * 100) / WINDOW);
+			queue_delayed_work(t->wq, &t->throttle_work, t->poll_jiffies);
+			return;
+		}
+	}
+
+	// Calculate average temperatures
+	temp_sum = 0;
+	for (i = 0; i < WINDOW; i++) {
+		temp_sum += t->temp_history[i];
+	}
+	temp_final = temp_sum / WINDOW;
 
 	for (i = t->nr_zones - 1; i >= 0; i--) {
 		if (temp_final >= t->zones[i].trip_deg) {
@@ -224,6 +252,11 @@ static int msm_thermal_simple_probe(struct platform_device *pdev)
 	ret = msm_thermal_simple_parse_dt(pdev, t);
 	if (ret)
 		goto destroy_wq;
+
+	/* Initialize the temperature history with 0 */
+	memset(t->temp_history, 0, sizeof(t->temp_history));
+	t->temp_index = 0;
+	t->wait = true;
 
 	/* Set the priority to INT_MIN so throttling can't be tampered with */
 	t->cpu_notif.notifier_call = cpu_notifier_cb;
