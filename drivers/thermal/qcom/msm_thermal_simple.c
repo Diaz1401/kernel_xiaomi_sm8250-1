@@ -57,42 +57,50 @@ static void update_online_cpu_policy(void)
 {
 	unsigned int cpu;
 
-	get_online_cpus();
-	for_each_possible_cpu(cpu) {
-		if (cpu_online(cpu)) {
-			if (cpumask_intersects(cpumask_of(cpu), cpu_lp_mask))
-				cpufreq_update_policy(cpu);
-			if (cpumask_intersects(cpumask_of(cpu), cpu_perf_mask))
-				cpufreq_update_policy(cpu);
-			if (cpumask_intersects(cpumask_of(cpu), cpu_prime_mask))
-				cpufreq_update_policy(cpu);
-		}
+	cpus_read_lock();
+	for_each_online_cpu(cpu) {
+		if (cpumask_intersects(cpumask_of(cpu), cpu_lp_mask))
+			cpufreq_update_policy(cpu);
+		if (cpumask_intersects(cpumask_of(cpu), cpu_perf_mask))
+			cpufreq_update_policy(cpu);
+		if (cpumask_intersects(cpumask_of(cpu), cpu_prime_mask))
+			cpufreq_update_policy(cpu);
 	}
-	put_online_cpus();
+	cpus_read_unlock();
 }
 
 static void thermal_throttle_worker(struct work_struct *work)
 {
-	struct thermal_drv *t = container_of(to_delayed_work(work), typeof(*t),
-					     throttle_work);
+	struct thermal_drv *t = container_of(to_delayed_work(work), typeof(*t), throttle_work);
 	struct thermal_zone *new_zone = NULL, *old_zone = t->curr_zone;
 	int temp = 0, temp_final = 0;
 	s64 temp_sum = 0;
 	short i = 0;
 	char zone[15];
+	struct thermal_zone_device *tz;
 
-	if (t->zone_name == NULL) {
+	if (t->zone_name) {
+		tz = thermal_zone_get_zone_by_name(t->zone_name);
+		if (!tz) {
+			pr_err("Thermal zone %s not found\n", t->zone_name);
+			return;
+		}
+		thermal_zone_get_temp(tz, &temp);
+		temp_final = temp;
+		sprintf(zone, t->zone_name);
+	} else {
 		for (i; i < NR_CPUS; i++) {
 			sprintf(zone, "cpu-1-%i-usr", i);
-			thermal_zone_get_temp(thermal_zone_get_zone_by_name(zone), &temp);
+			tz = thermal_zone_get_zone_by_name(zone);
+			if (!tz) {
+				pr_err("Thermal zone %s not found\n", t->zone_name);
+				return;
+			}
+			thermal_zone_get_temp(tz, &temp);
 			temp_sum += temp;
 		}
 		temp_final = temp_sum / NR_CPUS;
 		sprintf(zone, "average");
-	} else {
-		thermal_zone_get_temp(thermal_zone_get_zone_by_name(t->zone_name), &temp);
-		temp_final = temp;
-		sprintf(zone, t->zone_name);
 	}
 
 	// Store the current temperature
@@ -242,8 +250,7 @@ static int msm_thermal_simple_probe(struct platform_device *pdev)
 	if (!t)
 		return -ENOMEM;
 
-	t->wq = alloc_workqueue("msm_thermal_simple",
-				WQ_HIGHPRI | WQ_UNBOUND, 0);
+	t->wq = alloc_workqueue("msm_thermal_simple", WQ_HIGHPRI | WQ_UNBOUND, 0);
 	if (!t->wq) {
 		ret = -ENOMEM;
 		goto free_t;
