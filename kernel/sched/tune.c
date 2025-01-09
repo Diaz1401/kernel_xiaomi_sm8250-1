@@ -528,11 +528,10 @@ void schedtune_dequeue_task(struct task_struct *p, int cpu)
 	raw_spin_unlock_irqrestore(&bg->lock, irq_flags);
 }
 
-int schedtune_cpu_boost_with(int cpu, struct task_struct *p)
+int schedtune_cpu_boost(int cpu)
 {
 	struct boost_groups *bg;
 	u64 now;
-	int task_boost = p ? schedtune_task_boost(p) : -100;
 
 	bg = &per_cpu(cpu_boost_groups, cpu);
 	now = sched_clock_cpu(cpu);
@@ -541,7 +540,7 @@ int schedtune_cpu_boost_with(int cpu, struct task_struct *p)
 	if (schedtune_boost_timeout(now, bg->boost_ts))
 		schedtune_cpu_update(cpu, now);
 
-	return max(bg->boost_max, task_boost);
+	return bg->boost_max;
 }
 
 int schedtune_task_boost(struct task_struct *p)
