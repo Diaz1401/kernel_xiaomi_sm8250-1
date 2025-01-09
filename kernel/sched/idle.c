@@ -60,7 +60,7 @@ static noinline int __cpuidle cpu_idle_poll(void)
 	stop_critical_timings();
 
 	while (!tif_need_resched() &&
-	       (cpu_idle_force_poll || tick_check_broadcast_expired() ||
+		(cpu_idle_force_poll || tick_check_broadcast_expired() ||
 		is_reserved(smp_processor_id())))
 		cpu_relax();
 	start_critical_timings();
