@@ -77,9 +77,6 @@
 #define FTS_ONE_TCH_LEN 6
 #define FTS_TOUCH_DATA_LEN (FTS_MAX_POINTS_SUPPORT * FTS_ONE_TCH_LEN + 3)
 
-#define FTS_GESTURE_POINTS_MAX 6
-#define FTS_GESTURE_DATA_LEN (FTS_GESTURE_POINTS_MAX * 4 + 4)
-
 #define FTS_MAX_ID 0x0A
 #define FTS_TOUCH_X_H_POS 3
 #define FTS_TOUCH_X_L_POS 4
@@ -180,7 +177,6 @@ struct fts_ts_data {
 	struct ts_ic_info ic_info;
 	struct workqueue_struct *ts_workqueue;
 	struct work_struct fwupg_work;
-	struct delayed_work esdcheck_work;
 	struct delayed_work prc_work;
 	struct work_struct resume_work;
 	struct ftxxxx_proc proc;
@@ -202,7 +198,6 @@ struct fts_ts_data {
 	bool glove_mode;
 	bool cover_mode;
 	bool charger_mode;
-	bool gesture_mode; /* gesture enable or disable, default: disable */
 	/* multi-touch */
 	struct ts_event *events;
 	u8 *bus_tx_buf;
@@ -236,18 +231,12 @@ struct fts_ts_data {
 	struct notifier_block power_supply_notifier;
 
 #ifdef CONFIG_TOUCHSCREEN_XIAOMI_TOUCHFEATURE
-	u8 gesture_status;
 	bool gamemode_enabled;
 	struct mutex cmd_update_mutex;
 	int palm_sensor_switch;
 	bool power_status;
 	bool is_expert_mode;
 #endif
-};
-
-enum GESTURE_MODE_TYPE {
-	GESTURE_DOUBLETAP,
-	GESTURE_AOD,
 };
 
 enum _FTS_BUS_TYPE {
@@ -271,16 +260,6 @@ void fts_hid2std(void);
 int fts_bus_init(struct fts_ts_data *ts_data);
 int fts_bus_exit(struct fts_ts_data *ts_data);
 
-/* Gesture functions */
-int fts_gesture_init(struct fts_ts_data *ts_data);
-int fts_gesture_exit(struct fts_ts_data *ts_data);
-void fts_gesture_recovery(struct fts_ts_data *ts_data);
-int fts_gesture_readdata(struct fts_ts_data *ts_data, u8 *data);
-int fts_gesture_suspend(struct fts_ts_data *ts_data);
-int fts_gesture_resume(struct fts_ts_data *ts_data);
-void fts_update_gesture_state(struct fts_ts_data *ts_data, int bit,
-			      bool enable);
-
 /* Apk and functions */
 int fts_create_proc(struct fts_ts_data *ts_data);
 void fts_remove_proc(struct fts_ts_data *ts_data);
@@ -288,30 +267,6 @@ void fts_remove_proc(struct fts_ts_data *ts_data);
 /* ADB functions */
 int fts_create_sysfs(struct fts_ts_data *ts_data);
 int fts_remove_sysfs(struct fts_ts_data *ts_data);
-
-/* ESD */
-#if FTS_ESDCHECK_EN
-int fts_esdcheck_init(struct fts_ts_data *ts_data);
-int fts_esdcheck_exit(struct fts_ts_data *ts_data);
-int fts_esdcheck_switch(bool enable);
-int fts_esdcheck_proc_busy(bool proc_debug);
-int fts_esdcheck_set_intr(bool intr);
-int fts_esdcheck_suspend(void);
-int fts_esdcheck_resume(void);
-#endif
-
-/* Production test */
-#if FTS_TEST_EN
-int fts_test_init(struct fts_ts_data *ts_data);
-int fts_test_exit(struct fts_ts_data *ts_data);
-#endif
-
-/* Point Report Check*/
-#if FTS_POINT_REPORT_CHECK_EN
-int fts_point_report_check_init(struct fts_ts_data *ts_data);
-int fts_point_report_check_exit(struct fts_ts_data *ts_data);
-void fts_prc_queue_work(struct fts_ts_data *ts_data);
-#endif
 
 /* FW upgrade */
 int fts_fwupg_init(struct fts_ts_data *ts_data);

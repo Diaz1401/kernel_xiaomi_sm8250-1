@@ -1156,9 +1156,6 @@ int fts_upgrade_bin(char *fw_name, bool force)
 
 	upg->ts_data->fw_loading = 1;
 	fts_irq_disable();
-#if FTS_ESDCHECK_EN
-	fts_esdcheck_switch(DISABLE);
-#endif
 
 	ret = request_firmware(&fw, fw_name, upg->ts_data->dev);
 	if (ret == 0) {
@@ -1211,9 +1208,6 @@ int fts_upgrade_bin(char *fw_name, bool force)
 	ret = 0;
 
 err_bin:
-#if FTS_ESDCHECK_EN
-	fts_esdcheck_switch(ENABLE);
-#endif
 	fts_irq_enable();
 	upg->ts_data->fw_loading = 0;
 
@@ -2015,9 +2009,6 @@ static void fts_fwupg_work(struct work_struct *work)
 
 	upg->ts_data->fw_loading = 1;
 	fts_irq_disable();
-#if FTS_ESDCHECK_EN
-	fts_esdcheck_switch(DISABLE);
-#endif
 
 	/* get fw */
 	ret = fts_fwupg_get_fw_file(upg);
@@ -2030,9 +2021,6 @@ static void fts_fwupg_work(struct work_struct *work)
 		fts_fwupg_auto_upgrade(upg);
 	}
 
-#if FTS_ESDCHECK_EN
-	fts_esdcheck_switch(ENABLE);
-#endif
 	fts_irq_enable();
 	upg->ts_data->fw_loading = 0;
 }
