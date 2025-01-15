@@ -4,4 +4,6 @@ ifeq ($(CONFIG_DEBUG_FS),y)
 obj-y += debugfs.o
 else ifeq ($(CONFIG_PGO_GEN),y)
 obj-y += debugfs.o
+else ifeq ($(CONFIG_PGO_CLANG),y)
+obj-y += debugfs.o
 endif
