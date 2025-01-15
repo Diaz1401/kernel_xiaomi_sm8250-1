@@ -748,12 +748,16 @@ KBUILD_AFLAGS	+= $(cat_gcc_flags)
 endif
 endif
 
-# Use generated profiles from profiling with CONFIG_PGO_GEN to optimize the kernel
+# Use generated profiles from profiling with CONFIG_PGO_GEN or CONFIG_PGO_CLANG to optimize the kernel
 ifeq ($(CONFIG_PGO_USE),y)
+ifeq ($(cc-name),clang)
+KBUILD_CFLAGS	+=	-fprofile-use=vmlinux.profdata
+else
 KBUILD_CFLAGS	+=	-fprofile-use \
 			-fprofile-correction \
 			-fprofile-partial-training \
 			-Wno-error=coverage-mismatch
+endif
 endif
 
 # Tell gcc to never replace conditional load with a non-conditional one
