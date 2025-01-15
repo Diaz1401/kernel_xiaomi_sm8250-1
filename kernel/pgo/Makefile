@@ -2,4 +2,4 @@
 GCOV_PROFILE	:= n
 PGO_PROFILE	:= n
 
-obj-y	+= fs.o instrument.o
+obj-y		+= fs.o instrument.o
