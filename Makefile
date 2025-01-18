@@ -711,14 +711,28 @@ cat_gcc_flags	:= -fipa-pta \
 		 -fgraphite-identity \
 		 -floop-nest-optimize \
 		 -fno-semantic-interposition
+# Cortex-A77: L1 I-Cache/D-Cache 64KB; L2 Cache 256KB to 512KB.
+# Cortex-A55: L1 I-Cache/D-Cache 16KB to 64KB; L2 Cache Optional or 64KB to 256KB.
+# So we will assume that our sm8250 has 64KB L1 I-Cache/D-Cache and 256KB L2 Cache,
+# This configuration is experimental, further testing is needed.
+# Note: 1KB = 1024 Bytes
 cat_llvm_flags	:= -mllvm -polly \
 		 -mllvm -polly-position=early \
 		 -mllvm -polly-vectorizer=stripmine \
 		 -mllvm -polly-run-dce \
-		 -mllvm -polly-target-1st-cache-level-size=131072 \
-		 -mllvm -polly-target-1st-cache-level-default-size=131072 \
+		 -mllvm -polly-target-1st-cache-level-size=65536 \
+		 -mllvm -polly-target-1st-cache-level-default-size=65536 \
 		 -mllvm -polly-target-2nd-cache-level-size=262144 \
-		 -mllvm -polly-target-2nd-cache-level-default-size=262144
+		 -mllvm -polly-target-2nd-cache-level-default-size=262144 \
+		 -mllvm -inline-threshold=500 \
+		 -mllvm -unroll-threshold=450 \
+		 -mllvm -unroll-partial-threshold=450 \
+		 -mllvm -unroll-max-iteration-count-to-analyze=20 \
+		 -mllvm -lsr-complexity-limit=1073741823 \
+		 -mllvm -force-attribute=main:norecurse \
+		 -mllvm -enable-dfa-jump-thread \
+		 -mllvm -enable-loop-flatten \
+		 -mllvm -enable-unroll-and-jam
 
 ifdef CONFIG_CC_OPTIMIZE_FOR_SIZE
 KBUILD_CFLAGS	+= -Os
