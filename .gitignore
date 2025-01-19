@@ -134,3 +134,7 @@ all.config
 
 # fetched Android config fragments
 kernel/configs/android-*.cfg
+
+# ignore some directories
+out
+AnyKernel3
