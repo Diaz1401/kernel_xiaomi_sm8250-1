@@ -323,6 +323,3 @@ machine_dlkm-y := $(MACHINE_OBJS)
 
 obj-$(CONFIG_SND_SOC_CPE) += cpe_lsm_dlkm.o
 cpe_lsm_dlkm-y := $(CPE_LSM_OBJS)
-
-GCOV_PROFILE_msm-pcm-routing-v2.o := n
-PGO_PROFILE_msm-pcm-routing-v2.o := n
