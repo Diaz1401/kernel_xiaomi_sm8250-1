@@ -9,7 +9,7 @@
 &soc {
 	qcom,msm-thermal-simple {
 		compatible = "qcom,msm-thermal-simple";
-		qcom,poll-ms = <1000>;
+		qcom,poll-ms = <2000>;
 		qcom,start-delay = <5>;
 		qcom,thermal-zone = "cpu-1-3-usr";
 		zone@0 {
