@@ -44,14 +44,18 @@ static void
 enqueue_task_stop(struct rq *rq, struct task_struct *p, int flags)
 {
 	add_nr_running(rq, 1);
+#ifdef CONFIG_SCHED_WALT
 	walt_inc_cumulative_runnable_avg(rq, p);
+#endif
 }
 
 static void
 dequeue_task_stop(struct rq *rq, struct task_struct *p, int flags)
 {
 	sub_nr_running(rq, 1);
+#ifdef CONFIG_SCHED_WALT
 	walt_dec_cumulative_runnable_avg(rq, p);
+#endif
 }
 
 static void yield_task_stop(struct rq *rq)

@@ -1463,7 +1463,9 @@ enqueue_task_rt(struct rq *rq, struct task_struct *p, int flags)
 		rt_se->timeout = 0;
 
 	enqueue_rt_entity(rt_se, flags);
+#ifdef CONFIG_SCHED_WALT
 	walt_inc_cumulative_runnable_avg(rq, p);
+#endif
 
 	if (!task_current(rq, p) && p->nr_cpus_allowed > 1)
 		enqueue_pushable_task(rq, p);
@@ -1477,7 +1479,9 @@ static void dequeue_task_rt(struct rq *rq, struct task_struct *p, int flags)
 
 	update_curr_rt(rq);
 	dequeue_rt_entity(rt_se, flags);
+#ifdef CONFIG_SCHED_WALT
 	walt_dec_cumulative_runnable_avg(rq, p);
+#endif
 
 	dequeue_pushable_task(rq, p);
 }
@@ -1854,7 +1858,9 @@ static int rt_energy_aware_wake_cpu(struct task_struct *task)
 	unsigned long tutil = task_util(task);
 	int best_cpu_idle_idx = INT_MAX;
 	int cpu_idle_idx = -1;
+#ifdef CONFIG_SCHED_WALT
 	bool boost_on_big = rt_boost_on_big();
+#endif
 
 	rcu_read_lock();
 
@@ -1866,19 +1872,25 @@ static int rt_energy_aware_wake_cpu(struct task_struct *task)
 	if (!sd)
 		goto unlock;
 
+#ifdef CONFIG_SCHED_WALT
 retry:
+#endif
 	sg = sd->groups;
 	do {
 		int fcpu = group_first_cpu(sg);
 		int capacity_orig = capacity_orig_of(fcpu);
 
+#ifdef CONFIG_SCHED_WALT
 		if (boost_on_big) {
 			if (is_min_capacity_cpu(fcpu))
 				continue;
 		} else {
+#endif
 			if (capacity_orig > best_capacity)
 				continue;
+#ifdef CONFIG_SCHED_WALT
 		}
+#endif
 
 		for_each_cpu_and(cpu, lowest_mask, sched_group_span(sg)) {
 
@@ -1887,8 +1899,10 @@ retry:
 			if (cpu_isolated(cpu))
 				continue;
 
+#ifdef CONFIG_SCHED_WALT
 			if (sched_cpu_high_irqload(cpu))
 				continue;
+#endif
 
 			if (__cpu_overutilized(cpu, tutil))
 				continue;
@@ -1935,10 +1949,12 @@ retry:
 
 	} while (sg = sg->next, sg != sd->groups);
 
+#ifdef CONFIG_SCHED_WALT
 	if (unlikely(boost_on_big) && best_cpu == -1) {
 		boost_on_big = false;
 		goto retry;
 	}
+#endif
 
 unlock:
 	rcu_read_unlock();

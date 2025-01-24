@@ -71,7 +71,9 @@ void sched_get_nr_running_avg(struct sched_avg_stats *stats)
 		tmp_nr = div64_u64((tmp_nr * 100), period);
 
 		tmp_misfit = per_cpu(nr_big_prod_sum, cpu);
+#ifdef CONFIG_SCHED_WALT
 		tmp_misfit += walt_big_tasks(cpu) * diff;
+#endif
 		tmp_misfit = div64_u64((tmp_misfit * 100), period);
 
 		/*
@@ -185,7 +187,9 @@ void sched_update_nr_prod(int cpu, long delta, bool inc)
 	update_busy_hyst_end_time(cpu, !inc, nr_running, curr_time);
 
 	per_cpu(nr_prod_sum, cpu) += nr_running * diff;
+#ifdef CONFIG_SCHED_WALT
 	per_cpu(nr_big_prod_sum, cpu) += walt_big_tasks(cpu) * diff;
+#endif
 	spin_unlock_irqrestore(&per_cpu(nr_lock, cpu), flags);
 }
 EXPORT_SYMBOL(sched_update_nr_prod);
