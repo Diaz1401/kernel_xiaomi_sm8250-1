@@ -1,0 +1,43 @@
+env:
+  TELEGRAM_TOKEN: ENCRYPTED[!fa7d4ba3ceee4cb4ebd397ce1b634a44098a7380cceedd5e933252264052ff1837babe005e75ae0e15e6735a8b4ad34e!]
+  GCC_IGNORE_WERROR: 1
+git_fetch_template: &GIT_FETCH_TEMPLATE
+  timeout_in: 120m
+  clone_script: |
+    mkdir -p $CIRRUS_WORKING_DIR
+    cd $CIRRUS_WORKING_DIR
+    git init .
+    git remote add origin $CIRRUS_REPO_CLONE_URL
+    git fetch --depth=1 origin $CIRRUS_CHANGE_IN_REPO
+    git checkout $CIRRUS_CHANGE_IN_REPO -b $CIRRUS_BRANCH
+testing: &TESTING
+  only_if: $CIRRUS_BRANCH != 'kucing-2k24'
+main: &MAIN
+  only_if: $CIRRUS_BRANCH == 'kucing-2k24'
+container:
+  image: diazaji/ubuntu:kernel
+  cpu: 8
+  memory: 16G
+standard_task:
+  << : *GIT_FETCH_TEMPLATE
+  << : *TESTING
+  name: Compile Kernel (STD)
+  script:
+    - wget -qO build.sh https://raw.githubusercontent.com/Diaz1401/build-script/alioth/build.sh
+    - bash build.sh clang stable opt dce
+    - rm -rf out && mkdir -p out && git checkout -f
+    - bash build.sh gcc stable-20241022-1716-Asia opt dce
+pgo_task:
+  << : *GIT_FETCH_TEMPLATE
+  << : *MAIN
+  name: Compile Kernel (PGO)
+  script:
+    - wget -qO build.sh https://raw.githubusercontent.com/Diaz1401/build-script/alioth/build.sh
+    - wget -qO calcsum.cpp https://raw.githubusercontent.com/openeuler-mirror/A-FOT/master/GcovSummaryAddTool.cpp
+    - g++ -o calcsum calcsum.cpp
+    - bash build.sh gcc stable-20241022-1716-Asia opt dce pgo_gen
+    - rm -rf out && mkdir -p out && git checkout -f
+    - tar xf profiles.tar.gz -C out
+    - find out -name "*.gcda" > list.txt
+    - ./calcsum list.txt
+    - bash build.sh gcc stable-20241022-1716-Asia opt dce pgo_use keep
