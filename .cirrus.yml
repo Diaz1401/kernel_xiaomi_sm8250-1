@@ -10,34 +10,44 @@ git_fetch_template: &GIT_FETCH_TEMPLATE
     git remote add origin $CIRRUS_REPO_CLONE_URL
     git fetch --depth=1 origin $CIRRUS_CHANGE_IN_REPO
     git checkout $CIRRUS_CHANGE_IN_REPO -b $CIRRUS_BRANCH
-testing: &TESTING
-  only_if: $CIRRUS_BRANCH != 'kucing-2k24'
-main: &MAIN
-  only_if: $CIRRUS_BRANCH == 'kucing-2k24'
+# std: &STD
+#   only_if: $CIRRUS_BRANCH != '2k25-upstream'
+# pgo: &PGO
+#   only_if: $CIRRUS_BRANCH == '2k25-upstream'
 container:
   image: diazaji/ubuntu:kernel
   cpu: 8
   memory: 16G
-standard_task:
+std_task:
   << : *GIT_FETCH_TEMPLATE
-  << : *TESTING
+  # << : *STD
   name: Compile Kernel (STD)
   script:
-    - wget -qO build.sh https://raw.githubusercontent.com/Diaz1401/build-script/alioth/build.sh
-    - bash build.sh clang stable opt dce
-    - rm -rf out && mkdir -p out && git checkout -f
-    - bash build.sh gcc stable-20241022-1716-Asia opt dce
+    - wget -qO build.sh https://raw.githubusercontent.com/mengkernel/build-script/alioth/build.sh
+    - bash build.sh clang stable-20250115-0914-Asia opt dce lto
+    # - rm -rf out && mkdir -p out && git checkout -f
+    # - bash build.sh gcc stable-20241022-1716-Asia opt dce lto
 pgo_task:
   << : *GIT_FETCH_TEMPLATE
-  << : *MAIN
+  # << : *PGO
   name: Compile Kernel (PGO)
   script:
-    - wget -qO build.sh https://raw.githubusercontent.com/Diaz1401/build-script/alioth/build.sh
-    - wget -qO calcsum.cpp https://raw.githubusercontent.com/openeuler-mirror/A-FOT/master/GcovSummaryAddTool.cpp
-    - g++ -o calcsum calcsum.cpp
-    - bash build.sh gcc stable-20241022-1716-Asia opt dce pgo_gen
+    - wget -qO build.sh https://raw.githubusercontent.com/mengkernel/build-script/alioth/build.sh
+    - bash build.sh clang stable-20250115-0910-Asia opt dce pgo_gen
     - rm -rf out && mkdir -p out && git checkout -f
-    - tar xf profiles.tar.gz -C out
-    - find out -name "*.gcda" > list.txt
-    - ./calcsum list.txt
-    - bash build.sh gcc stable-20241022-1716-Asia opt dce pgo_use keep
+    - tar xf vmlinux.profdata.tar.gz -C out
+    - bash build.sh clang stable-20250115-0910-Asia opt dce pgo_use keep
+# pgo_gcc_task:
+#   << : *GIT_FETCH_TEMPLATE
+#   << : *MAIN
+#   name: Compile Kernel (PGO)
+#   script:
+#     - wget -qO build.sh https://raw.githubusercontent.com/Diaz1401/build-script/alioth/build.sh
+#     - wget -qO calcsum.cpp https://raw.githubusercontent.com/openeuler-mirror/A-FOT/master/GcovSummaryAddTool.cpp
+#     - g++ -o calcsum calcsum.cpp
+#     - bash build.sh gcc stable-20241022-1716-Asia opt dce pgo_gen
+#     - rm -rf out && mkdir -p out && git checkout -f
+#     - tar xf profiles.tar.gz -C out
+#     - find out -name "*.gcda" > list.txt
+#     - ./calcsum list.txt
+#     - bash build.sh gcc stable-20241022-1716-Asia opt dce pgo_use keep
