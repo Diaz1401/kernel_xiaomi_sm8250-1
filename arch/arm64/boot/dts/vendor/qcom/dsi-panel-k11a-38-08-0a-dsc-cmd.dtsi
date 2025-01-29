@@ -22,7 +22,8 @@
 		qcom,mdss-dsi-lane-3-state;
 		qcom,mdss-dsi-dma-trigger = "trigger_sw";
 		qcom,mdss-dsi-mdp-trigger = "none";
-		qcom,mdss-dsi-reset-sequence = <0 10>, <1 10>;
+		qcom,mdss-dsi-reset-sequence = <0 12>, <1 10>;
+		qcom,mdss-dsi-reset-powerdown-delay = <10>;
 		qcom,mdss-pan-physical-width-dimension = <70>;
 		qcom,mdss-pan-physical-height-dimension = <155>;
 		qcom,mdss-dsi-te-pin-select = <1>;
@@ -165,7 +166,7 @@
 					39 00 00 00 00 00 02 B0 16
 					39 00 00 00 00 00 02 D1 2E
 					39 00 00 00 00 00 03 FC A5 A5
-					39 01 00 00 0C 00 03 F0 A5 A5];
+					39 01 00 00 11 00 03 F0 A5 A5];
 				qcom,mdss-dsi-timing-switch-command-state = "dsi_lp_mode";
 
 				qcom,mdss-dsi-nolp-command = [
