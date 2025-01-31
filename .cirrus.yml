@@ -24,9 +24,12 @@ std_task:
   name: Compile Kernel (STD)
   script:
     - wget -qO build.sh https://raw.githubusercontent.com/mengkernel/build-script/alioth/build.sh
-    - bash build.sh clang stable-20250115-0914-Asia opt dce lto
+    - bash build.sh clang stable-20250115-0914-Asia opt dce
+    - rm -rf out && mkdir -p out && git checkout -f
+    - bash build.sh clang stable-20250115-0910-Asia opt dce
+    - rm -rf out && mkdir -p out && git checkout -f
     # - rm -rf out && mkdir -p out && git checkout -f
-    # - bash build.sh gcc stable-20241022-1716-Asia opt dce lto
+    # - bash build.sh gcc stable-20241022-1716-Asia opt dce
 pgo_task:
   << : *GIT_FETCH_TEMPLATE
   # << : *PGO
